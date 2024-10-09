@@ -1,5 +1,5 @@
 import { Text, View } from "react-native";
-
+import ChatComponent from "../components/ChatComponent";
 export default function Index() {
   return (
     <View
@@ -10,6 +10,7 @@ export default function Index() {
       }}
     >
       <Text>Edit app/index.tsx to edit this screen.</Text>
+      <ChatComponent  />
     </View>
   );
 }
