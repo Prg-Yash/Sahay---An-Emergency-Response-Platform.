@@ -1,9 +1,10 @@
+//import { StreamVideoClient } from "@stream-io/video-react-native-sdk";
 import { StreamVideoClient } from "@stream-io/video-react-native-sdk";
 import { Stack } from "expo-router";
 import { Tabs } from "expo-router/tabs"; // Import Tabs from expo-router
 
 export default function RootLayout() {
-  const apiKey = process.env.EXPO_PUBLIC_GET_STREAM_API_KEY;
+  const apiKey = "besk2xhggurv";
 
   const user = {
     id: "1234",
