@@ -8,6 +8,12 @@ import io from "socket.io-client";
 // Initialize Socket connection
 const socket = io("http://localhost:3000"); // Ensure the URL is correct // Replace with your backend URL
 
+const volunteersMarker = [
+  { latitude: 19.3022689, longitude: 72.8752289 },
+  { latitude: 19.3002689, longitude: 72.8725289 },
+  { latitude: 19.2943789, longitude: 72.8758389 },
+];
+
 const MapScreen = () => {
   const [location, setLocation] = useState(null);
   const [region, setRegion] = useState({
@@ -34,6 +40,8 @@ const MapScreen = () => {
         latitude: coords.latitude,
         longitude: coords.longitude,
       });
+
+      console.log("Current location:", coords);
 
       // Emit user's location to the server once we get it
       socket.emit("userLocation", {
@@ -83,7 +91,7 @@ const MapScreen = () => {
         {/* Render markers for volunteers within 400 meters */}
         {location?.latitude &&
           location?.longitude &&
-          volunteers
+          volunteersMarker
             .filter((volunteer) => {
               const distance = getDistance(
                 { latitude: location.latitude, longitude: location.longitude },

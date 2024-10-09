@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import  {getAuth} from "firebase/auth"
+import { getAuth } from "firebase/auth";
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -11,7 +11,7 @@ const firebaseConfig = {
   storageBucket: "sahay-68382.appspot.com",
   messagingSenderId: "227364149097",
   appId: "1:227364149097:web:b62acf2fa75305688bcff8",
-  measurementId: "G-WZLTWFCMYK"
+  measurementId: "G-WZLTWFCMYK",
 };
 
 // Initialize Firebase
