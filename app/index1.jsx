@@ -8,6 +8,8 @@ import { auth } from "./firebase";
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/Feather';
+import { useState } from 'react';
+import { router } from 'expo-router';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -53,7 +55,6 @@ const Switch = ({ value, onValueChange }) => (
     <View style={[styles.switchThumb, value && styles.switchThumbOn]} />
   </TouchableOpacity>
 );
-
 
 const styles = StyleSheet.create({
   container: {
@@ -489,13 +490,27 @@ function LoginScreen({ navigation }) {
       <Text style={styles.link}>Don't have an account? <Text style={styles.link} onPress={() => navigation.navigate('SignUp')}>Sign Up</Text></Text>
       {error && <Text style={styles.errorText}>{error}</Text>}
       {!isEmailVerified && <Text style={styles.errorText}>Please verify your email before logging in.</Text>}
+      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Map')}>
+        <Text style={{ color: 'white', fontWeight: 'bold' }}>Go to Map</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Alerts')}>
+        <Text style={{ color: 'white', fontWeight: 'bold' }}>Go to Alerts</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Community')}>
+        <Text style={{ color: 'white', fontWeight: 'bold' }}>Go to Community</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Home')}>
+        <Text style={{ color: 'white', fontWeight: 'bold' }}>Go to Home</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Profile')}>
+        <Text style={{ color: 'white', fontWeight: 'bold' }}>Go to Profile</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Settings')}>
+        <Text style={{ color: 'white', fontWeight: 'bold' }}>Go to Settings</Text>
+      </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
-
-
-
     </>
-    
   );
 }
 
@@ -579,20 +594,11 @@ function SignUpScreen({ navigation }) {
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
-
-
-
-      
-      
-  
     </>
-   
   );
 }
 
 function HomeScreen({ route, navigation }) {
-  
-
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -616,18 +622,27 @@ function HomeScreen({ route, navigation }) {
             </CardContent>
           </Card>
           <View style={styles.grid}>
-            
-           
+            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Map')}>
+              <Text style={{ color: 'white', fontWeight: 'bold' }}>Go to Map</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Alerts')}>
+              <Text style={{ color: 'white', fontWeight: 'bold' }}>Go to Alerts</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Community')}>
+              <Text style={{ color: 'white', fontWeight: 'bold' }}>Go to Community</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Profile')}>
+              <Text style={{ color: 'white', fontWeight: 'bold' }}>Go to Profile</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Settings')}>
+              <Text style={{ color: 'white', fontWeight: 'bold' }}>Go to Settings</Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       </SafeAreaView>
   </>
-    
-  
-    
   );
 }
-
 
 function LoggedInNavigator({ user, handleLogout }) {
   return (
@@ -653,14 +668,10 @@ function LoggedInNavigator({ user, handleLogout }) {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen}/>
-        
-     
       <Tab.Screen name="Map" component={MapPage} />
       <Tab.Screen name="Alerts" component={AlertsPage} />
       <Tab.Screen name="Community" component={CommunityPage} />
       <Tab.Screen name="Profile" component={HomeScreen}/>
-        
-      
     </Tab.Navigator>
   );
 }
@@ -706,6 +717,7 @@ const MapPage = () => {
     </SafeAreaView>
   );
 };
+
 const AlertsPage = () => (
   <SafeAreaView style={styles.container}>
     <ScrollView contentContainerStyle={styles.content}>
@@ -766,21 +778,163 @@ const CommunityPage = () => (
       </Card>
     </ScrollView>
   </SafeAreaView>
+  
 );
 
+const ProfilePage = ({ user, handleLogout, navigation }) => {
+  const [isKycVerified, setIsKycVerified] = useState(false);
+
+  const handleKycVerification = () => {
+    // Simulate KYC verification process
+    setTimeout(() => {
+      setIsKycVerified(true);
+      Alert.alert("Success", "KYC verification successful!");
+    }, 3000);
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.content}>
+        <Card>
+          <CardHeader>
+            <CardTitle>Your Sahay Profile</CardTitle>
+            <CardDescription>Manage your account and safety preferences</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <View style={styles.profileHeader}>
+              <Avatar source={user?.avatar} name={user?.name} />
+              <View style={styles.profileInfo}>
+                <Text style={styles.profileName}>{user?.name}</Text>
+                <Text style={styles.profileEmail}>{user?.email}</Text>
+                {isKycVerified ? (
+                  <Badge variant="success">KYC Verified</Badge>
+                ) : (
+                  <Button title="Verify KYC" onPress={handleKycVerification} />
+                )}
+              </View>
+            </View>
+            <Separator />
+            <Text style={styles.sectionTitle}>Account Settings</Text>
+            <Button title="Edit Profile" onPress={() => navigation.navigate('Settings')} />
+            <Button title="Notification Preferences" onPress={() => navigation.navigate('Alerts')} />
+            <Button title="Emergency Contacts" onPress={() => navigation.navigate('EmergencyContacts')} />
+            <Button title="Help & Support" onPress={() => navigation.navigate('SafetyTips')} />
+            <Separator />
+            <Button title="Log Out" variant="destructive" onPress={handleLogout} />
+          </CardContent>
+        </Card>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+const SettingsPage = () => {
+  const [locationEnabled, setLocationEnabled] = useState(false);
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.content}>
+        <Card>
+          <CardHeader>
+            <CardTitle>Settings</CardTitle>
+            <CardDescription>Customize your Sahay experience</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <View style={styles.settingItem}>
+              <View>
+                <Text style={styles.settingTitle}>Push Notifications</Text>
+                <Text style={styles.settingDescription}>Receive alerts on your device</Text>
+              </View>
+              <Button title="Configure" variant="outline" />
+            </View>
+            <Separator />
+            <View style={styles.settingItem}>
+              <View>
+                <Text style={styles.settingTitle}>Location Services</Text>
+                <Text style={styles.settingDescription}>Allow app to access your location</Text>
+              </View>
+              <Switch
+                value={locationEnabled}
+                onValueChange={setLocationEnabled}
+              />
+            </View>
+            <Separator />
+            <View style={styles.settingItem}>
+              <View>
+                <Text style={styles.settingTitle}>Data Usage</Text>
+                <Text style={styles.settingDescription}>Control how the app uses your data</Text>
+              </View>
+              <Button title="Adjust" variant="outline" />
+            </View>
+            <Separator />
+            <View style={styles.settingItem}>
+              <View>
+                <Text style={styles.settingTitle}>Privacy Settings</Text>
+                <Text style={styles.settingDescription}>Manage your privacy preferences</Text>
+              </View>
+              <Button title="Review" variant="outline" />
+            </View>
+          </CardContent>
+        </Card>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+const LeaderboardPage = () => {
+  const leaderboard = [
+    { id: 1, name: "Alice Johnson", points: 1200, avatar: "/placeholder.svg?height=40&width=40", badge: "Gold" },
+    { id: 2, name: "Bob Williams", points: 980, avatar: "/placeholder.svg?height=40&width=40", badge: "Silver" },
+    { id: 3, name: "Carol Davis", points: 850, avatar: "/placeholder.svg?height=40&width=40", badge: "Bronze" },
+    { id: 4, name: "David Brown", points: 720, avatar: "/placeholder.svg?height=40&width=40", badge: null },
+    { id: 5, name: "Eva Wilson", points: 650, avatar: "/placeholder.svg?height=40&width=40", badge: null },
+  ];
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.content}>
+        <Card>
+          <CardHeader>
+            <CardTitle>Community Leaderboard</CardTitle>
+            <CardDescription>Recognizing our most active and helpful community members</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <FlatList
+              data={leaderboard}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item, index }) => (
+                <View style={styles.leaderboardItem}>
+                  <Text style={styles.leaderboardRank}>{index + 1}</Text>
+                  <View style={styles.leaderboardUser}>
+                    <Avatar source={{ uri: item.avatar }} name={item.name} />
+                    <Text style={styles.leaderboardName}>{item.name}</Text>
+                  </View>
+                  <Text style={styles.leaderboardPoints}>{item.points}</Text>
+                  {item.badge && (
+                    <Badge variant={item.badge.toLowerCase()}>{item.badge}</Badge>
+                  )}
+                </View>
+              )}
+            />
+          </CardContent>
+        </Card>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+const authenticated = true;
 
 
 function App() {
   return (
     <NavigationContainer independent={true}>
-     
       <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Login" component={authenticated ? router.replace('') : LoginScreen } />
         <Stack.Screen name="SignUp" component={SignUpScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Community" component={CommunityPage} />
-       
-        
+        <Stack.Screen name="Profile" component={ProfilePage} />
+        <Stack.Screen name="Settings" component={SettingsPage} />
       </Stack.Navigator>
     </NavigationContainer>
   );
