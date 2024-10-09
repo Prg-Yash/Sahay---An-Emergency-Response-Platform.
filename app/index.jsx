@@ -1,10 +1,11 @@
-import * as React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, Modal, Button, Alert } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { getAuth, signInWithEmailAndPassword, isEmailVerified, signOut, sendEmailVerification, createUserWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 import { getDatabase, ref, set } from "firebase/database";
 import { auth } from "./firebase";
+import ChatBot from '../components/ChatBot';
 
 const Stack = createNativeStackNavigator();
 
@@ -61,6 +62,22 @@ const styles = {
   errorText: {
     color: 'red',
     marginTop: 16,
+  },
+  chatBotButton: {
+    position: 'absolute',
+    bottom: 30,
+    right: 30,
+    width: 60,
+    height: 60,
+    backgroundColor: '#00796b',
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5, // For Android shadow
+  },
+  chatBotButtonText: {
+    fontSize: 24, // Adjust size as necessary
+    color: '#fff',
   },
 };
 
@@ -207,6 +224,7 @@ function SignUpScreen({ navigation }) {
 
 function HomeScreen({ route, navigation }) {
   const { user } = route.params;
+  const [isChatBotVisible, setChatBotVisible] = useState(false); 
 
   const handleLogout = async () => {
     try {
@@ -217,11 +235,22 @@ function HomeScreen({ route, navigation }) {
     }
   };
 
+  const toggleChatBot = () => {
+    setChatBotVisible(!isChatBotVisible); // Toggle the ChatBot visibility
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome, {user.name}!</Text> 
+      {isChatBotVisible && <ChatBot />} {/* Render ChatBot based on visibility */}
+
       <TouchableOpacity style={styles.button} onPress={handleLogout}>
         <Text style={{ color: 'white', fontWeight: 'bold' }}>Logout</Text>
+      </TouchableOpacity>
+
+      {/* Icon/Button to toggle ChatBot */}
+      <TouchableOpacity style={styles.chatBotButton} onPress={toggleChatBot}>
+        <Text style={styles.chatBotButtonText}>🤖</Text> {/* Use an emoji or an icon */}
       </TouchableOpacity>
       
     </View>
