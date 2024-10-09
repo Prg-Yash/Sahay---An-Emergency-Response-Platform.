@@ -44,7 +44,8 @@
     "react-native-screens": "3.31.1",
     "react-native-sound": "^0.11.2",
     "react-native-web": "~0.19.10",
-    "typescript": "~5.3.3"
+    "typescript": "~5.3.3",
+    "expo-device": "~6.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
