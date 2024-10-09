@@ -47,6 +47,7 @@ const MapScreen = () => {
         latitude: coords.latitude,
         longitude: coords.longitude,
       });
+      console.log(coords);
     })();
   }, []);
 

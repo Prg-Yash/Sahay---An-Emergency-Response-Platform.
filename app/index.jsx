@@ -55,7 +55,7 @@ export default function Index() {
         }}
       />
       <Text>Hello</Text>
-      <Link href="/dashboard">Go to Dashboard</Link>
+      <Link href="/mappingvolunteer">Go to Dashboard</Link>
 
       <SafeAreaView style={styles.container}>
         <MapScreen />
