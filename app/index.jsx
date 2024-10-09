@@ -1,8 +1,9 @@
 import * as React from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Modal, Button, Alert } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { getAuth, signInWithEmailAndPassword, isEmailVerified, signOut, sendEmailVerification, createUserWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
+import { getDatabase, ref, set } from "firebase/database";
 import { auth } from "./firebase";
 
 const Stack = createNativeStackNavigator();
@@ -81,7 +82,7 @@ function LoginScreen({ navigation }) {
         return;
       }
 
-      navigation.navigate('Home');
+      navigation.navigate('Home', { user }); // Pass user data to Home screen
     } catch (error) {
       setError(error.message);
     }
@@ -131,13 +132,27 @@ function SignUpScreen({ navigation }) {
   const [name, setName] = React.useState('');
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const [mobileNumber, setMobileNumber] = React.useState('');
+  const [address, setAddress] = React.useState('');
+  const [showModal, setShowModal] = React.useState(false);
 
   const handleSignUp = async () => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+      const db = getDatabase();
+      const userRef = ref(db, 'users/' + user.uid);
+      await set(userRef, {
+        userId: user.uid,
+        name: name,
+        email: email,
+        mobileNumber: mobileNumber,
+        address: address
+      });
+      setShowModal(true);
       await sendEmailVerification(user);
-      navigation.navigate('Login');
+      Alert.alert("Verification Email Sent", "Please check your email to verify your account.");
+      navigation.navigate('Login'); // Redirect to Login after sign up
     } catch (error) {
       console.error("Error signing up:", error.message);
     }
@@ -168,6 +183,20 @@ function SignUpScreen({ navigation }) {
         secureTextEntry={true}
         autoCapitalize="none"
       />
+      <TextInput
+        style={styles.input}
+        placeholder="Mobile Number"
+        value={mobileNumber}
+        onChangeText={setMobileNumber}
+        keyboardType="phone-pad"
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Address"
+        value={address}
+        onChangeText={setAddress}
+        multiline={true}
+      />
       <TouchableOpacity style={styles.button} onPress={handleSignUp}>
         <Text style={{ color: 'white', fontWeight: 'bold' }}>Sign Up</Text>
       </TouchableOpacity>
@@ -176,11 +205,13 @@ function SignUpScreen({ navigation }) {
   );
 }
 
-function HomeScreen({ navigation }) {
+function HomeScreen({ route, navigation }) {
+  const { user } = route.params;
+
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      navigation.navigate('Login');
+      navigation.navigate('Login'); // Redirect to Login after logout
     } catch (error) {
       console.error("Error logging out:", error.message);
     }
@@ -188,10 +219,11 @@ function HomeScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Home Screen</Text>
+      <Text style={styles.title}>Welcome, {user.name}!</Text> 
       <TouchableOpacity style={styles.button} onPress={handleLogout}>
         <Text style={{ color: 'white', fontWeight: 'bold' }}>Logout</Text>
       </TouchableOpacity>
+      
     </View>
   );
 }
