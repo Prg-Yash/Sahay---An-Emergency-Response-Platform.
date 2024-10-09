@@ -1,0 +1,33 @@
+{
+  "cli": {
+    "version": ">= 12.5.1",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "development-simulator": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_GET_STREAM_API_KEY": "besk2xhggurv",
+        "EXPO_PUBLIC_GET_STREAM_SECRET_KEY": "49mjqdr5c6wpdd9ca4h54wann5ny4f9ngvup8bpfrhc95jy27gj4vbkmmxqby77k",
+        "EXPO_PUBLIC_API_URL": "https://2bc6-103-172-87-178.ngrok-free.app"
+      },
+      "ios": {
+        "simulator": true
+      }
+    },
+    "preview": {
+      "distribution": "internal"
+    },
+    "production": {
+      "autoIncrement": true
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
