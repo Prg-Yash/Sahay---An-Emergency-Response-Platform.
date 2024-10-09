@@ -67,7 +67,7 @@ const styles = {
 function LoginScreen({ navigation }) {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
-  const [error, setError] = React.useState('');
+
   const [isEmailVerified, setIsEmailVerified] = React.useState(true);
 
   const handleSubmit = async () => {
@@ -78,22 +78,22 @@ function LoginScreen({ navigation }) {
       // Check if the email is verified
       if (!user.emailVerified) {
         setIsEmailVerified(false);
-        setError("Please verify your email before logging in.");
+        Alert("Please verify your email before logging in.");
         return;
       }
 
       navigation.navigate('Home', { user }); // Pass user data to Home screen
     } catch (error) {
-      setError(error.message);
+      console.log(error)
     }
   };
 
   const handleForgotPassword = async () => {
     try {
       await sendPasswordResetEmail(auth, email);
-      setError("Password reset email sent. Please check your email.");
+      Alert("Password reset email sent. Please check your email.");
     } catch (error) {
-      setError("Failed to send password reset email. Please try again.");
+      Alert("Failed to send password reset email. Please try again.");
     }
   };
 
@@ -122,7 +122,7 @@ function LoginScreen({ navigation }) {
         <Text style={{ color: 'white', fontWeight: 'bold' }}>Forgot Password</Text>
       </TouchableOpacity>
       <Text style={styles.link}>Don't have an account? <Text style={styles.link} onPress={() => navigation.navigate('SignUp')}>Sign Up</Text></Text>
-      {error && <Text style={styles.errorText}>{error}</Text>}
+      
       {!isEmailVerified && <Text style={styles.errorText}>Please verify your email before logging in.</Text>}
     </ScrollView>
   );
@@ -154,7 +154,7 @@ function SignUpScreen({ navigation }) {
       Alert.alert("Verification Email Sent", "Please check your email to verify your account.");
       navigation.navigate('Login'); // Redirect to Login after sign up
     } catch (error) {
-      console.error("Error signing up:", error.message);
+      console.log("Error signing up:", error.message);
     }
   };
 
@@ -213,7 +213,7 @@ function HomeScreen({ route, navigation }) {
       await signOut(auth);
       navigation.navigate('Login'); // Redirect to Login after logout
     } catch (error) {
-      console.error("Error logging out:", error.message);
+      console.log("Error logging out:", error.message);
     }
   };
 
