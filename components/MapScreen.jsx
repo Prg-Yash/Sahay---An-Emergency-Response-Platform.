@@ -1,7 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, View, Dimensions } from "react-native";
+import { StyleSheet, View, Dimensions, Text } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
+import { getDistance } from "geolib";
+
+const volunteersMarker = [
+  {
+    latitude: 19.3022689,
+    longitude: 72.8752289,
+  },
+  {
+    latitude: 19.3002689,
+    longitude: 72.8725289,
+  },
+  {
+    latitude: 19.2943789,
+    longitude: 72.8758389,
+  },
+];
 
 const MapScreen = () => {
   const [location, setLocation] = useState(null);
@@ -40,13 +56,40 @@ const MapScreen = () => {
         {location && (
           <Marker
             coordinate={{
-              latitude: location.latitude,
-              longitude: location.longitude,
+              latitude: location?.latitude,
+              longitude: location?.longitude,
             }}
             title="You are here"
             description="Your current location"
           />
         )}
+
+        <Marker
+          coordinate={{
+            latitude: 19.3082689,
+            longitude: 72.8658389,
+          }}
+          title="You are here"
+          description="Your current location"
+        />
+
+        {location?.latitude &&
+          location?.longitude &&
+          volunteersMarker.map((marker, index) => {
+            const volunteerDistance = getDistance(
+              { latitude: location?.latitude, longitude: location?.longitude },
+              marker
+            ); // Calculate distance to each volunteer
+            return (
+              <Marker
+                key={index}
+                coordinate={marker}
+                title={`Volunteer ${index + 1}`}
+                description={`Volunteer location - Distance: ${volunteerDistance} meters`} // Updated description
+                pinColor="blue" // Change this to your desired color
+              />
+            );
+          })}
       </MapView>
     </View>
   );
@@ -59,10 +102,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   map: {
-    // width: Dimensions.get("window").width,
-    // height: Dimensions.get("window").height,
     width: 300,
     height: 400,
+  },
+  distanceText: {
+    marginTop: 10,
+    fontSize: 16,
   },
 });
 

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Text, View, Button, StyleSheet, SafeAreaView } from "react-native";
 import * as Location from "expo-location";
 import MapScreen from "../components/MapScreen";
+import { Link } from "expo-router";
 
 export default function Index() {
   const [location, setLocation] = useState(null);
@@ -54,6 +55,7 @@ export default function Index() {
         }}
       />
       <Text>Hello</Text>
+      <Link href="/dashboard">Go to Dashboard</Link>
 
       <SafeAreaView style={styles.container}>
         <MapScreen />
