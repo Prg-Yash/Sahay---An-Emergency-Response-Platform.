@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, Text } from "react-native";
 import MapView, { Marker, Circle } from "react-native-maps";
 import * as Location from "expo-location";
 import { getDistance } from "geolib";
 import io from "socket.io-client";
 
 // Initialize Socket connection
-const socket = io("http://localhost:3000"); // Ensure the URL is correct // Replace with your backend URL
+const SOCKET_URL = "http://192.168.78.177:4000";
+let socket; // Declare socket variable
 
 const volunteersMarker = [
   { latitude: 19.3022689, longitude: 72.8752289 },
@@ -22,8 +23,14 @@ const MapScreen = () => {
     latitudeDelta: 0.015,
     longitudeDelta: 0.015,
   });
+  const [connected, setConnected] = useState(false); // Update state variable name
 
-  const [volunteers, setVolunteers] = useState([]);
+  // Initialize socket connection
+  socket = io.connect(SOCKET_URL, {
+    transports: ["websocket"], // Ensure websocket transport is used
+    reconnectionAttempts: 15,
+    // forceWebsockets: true, // Uncomment if needed
+  });
 
   useEffect(() => {
     (async () => {
@@ -44,16 +51,39 @@ const MapScreen = () => {
       console.log("Current location:", coords);
 
       // Emit user's location to the server once we get it
-      socket.emit("userLocation", {
-        latitude: coords.latitude,
-        longitude: coords.longitude,
-      });
+      // socket.emit("userLocation", {
+      //   latitude: coords.latitude,
+      //   longitude: coords.longitude,
+      // });
 
-      // Listen for updated volunteer locations
-      socket.on("volunteerLocations", (updatedVolunteers) => {
-        setVolunteers(updatedVolunteers);
-      });
+      // // Listen for updated volunteer locations
+      // socket.on("volunteerLocations", (updatedVolunteers) => {
+      //   setVolunteers(updatedVolunteers);
+      // });
     })();
+
+    // Connect socket and listen for events
+    const onConnectSocket = () => {
+      if (socket) {
+        socket.on("connect", () => {
+          console.log("Socket connected"); // Log successful connection
+          socket.emit("i-am-connected"); // Emit a message
+          setConnected(true); // Update connection status
+        });
+
+        // Add error handling
+        socket.on("connect_error", (error) => {
+          console.error("Socket connection error:", error); // Log connection error
+        });
+
+        // Add disconnect handling
+        socket.on("disconnect", (reason) => {
+          console.log("Socket disconnected:", reason); // Log disconnection reason
+        });
+      }
+    };
+
+    onConnectSocket(); // Call the function to connect
 
     // Clean up the socket connection when component unmounts
     return () => {
@@ -63,6 +93,8 @@ const MapScreen = () => {
 
   return (
     <View style={styles.container}>
+      <Text>{connected ? "Connected" : "Not Connected"}</Text>
+      {/* Display connection status */}
       <MapView style={styles.map} region={region}>
         {location && (
           <>
