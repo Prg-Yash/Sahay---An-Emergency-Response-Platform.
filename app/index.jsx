@@ -1,72 +1,60 @@
-import React, { useEffect, useState } from "react";
-import { Text, View, Button, StyleSheet, SafeAreaView } from "react-native";
-import * as Location from "expo-location";
-import MapScreen from "../components/MapScreen";
-import { Link } from "expo-router";
+import { Button } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { StyleSheet, View, Text } from 'react-native';
+import { router } from 'expo-router';
+import { auth } from '../app/firebase'; // Adjust the import path as necessary
+import { useEffect } from 'react';
 
-export default function Index() {
-  const [location, setLocation] = useState(null);
-  const [errorMsg, setErrorMsg] = useState(null);
+export default function LandingPage({ }) {
+
+  const styles = StyleSheet.create({
+    content: {
+      padding: 20,
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: '700',
+      marginBottom: 10,
+      color: '#1f2937',
+    },
+    subtitle: {
+      fontSize: 16,
+      color: '#4b5563',
+      marginBottom: 20,
+    },
+    button: {
+      backgroundColor: '#f97316',
+      padding: 10,
+      borderRadius: 5,
+      marginBottom: 10,
+      alignItems: 'center',
+    },
+    buttonText: {
+      color: '#fff',
+      fontSize: 16,
+    }
+  });
 
   useEffect(() => {
-    (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        setErrorMsg("Permission to access location was denied");
-        return;
+    const unsubscribe = auth.onAuthStateChanged(user => {
+      if (user) {
+        router.replace('/home'); // Redirect to home if user is authenticated
       }
+    });
 
-      let currentLocation = await Location.getCurrentPositionAsync({});
-      setLocation(currentLocation);
-    })();
-    // New effect for real-time location tracking
-
-    const intervalId = setInterval(async () => {
-      if (location) {
-        let newLocation = await Location.getCurrentPositionAsync({});
-        setLocation(newLocation);
-      }
-    }, 5000); // Update every 5 seconds
-
-    return () => clearInterval(intervalId); // Cleanup on unmount
-  }, [location]); // Dependency on location
-
-  let text = "Waiting..";
-  let lat = 0;
-  let long = 0;
-  if (errorMsg) {
-    text = errorMsg;
-  } else if (location) {
-    text = JSON.stringify(location.coords);
-    // console.log(location);
-    lat = location.coords.latitude;
-    long = location.coords.longitude;
-    // text = JSON.stringify(location);
-  }
+    return () => unsubscribe(); // Cleanup subscription on unmount
+  }, []);
 
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text style={{ padding: 20, fontSize: 20 }}>{text}</Text>
-      <Button
-        title="Get Current Location"
-        onPress={async () => {
-          let newLocation = await Location.getCurrentPositionAsync({});
-          setLocation(newLocation);
-        }}
-      />
-      <Text>Hello</Text>
-      <Link href="/mappingvolunteer">Go to Dashboard</Link>
-      <Link href="/notifytracker">Go to Notify Tracker</Link>
-
-      <SafeAreaView style={styles.container}>
-        <MapScreen />
-      </SafeAreaView>
-    </View>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.content}>
+        <Text style={styles.title}>Welcome to Sahay</Text>
+        <Text style={styles.subtitle}>Your trusted companion for safety and support</Text>
+        
+        <Button title="Get Started" onPress={() => router.replace('/signup')}  />
+        <View style={{ marginVertical: 8 }} /> 
+        <Button title="I already have an account" onPress={() => router.replace('/login')}  />
+      </View>
+    </SafeAreaView>
   );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
+} 
