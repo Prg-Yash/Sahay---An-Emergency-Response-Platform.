@@ -81,9 +81,10 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginBottom: 20,
         textAlign: 'center',
+        color: '#1f2937',
     },
     input: {
-        height: 40,
+        height: 50, // Increased height for better touch targets
         borderColor: 'gray',
         borderWidth: 1,
         marginBottom: 15,
@@ -94,6 +95,7 @@ const styles = StyleSheet.create({
         padding: 10,
         borderRadius: 5,
         marginBottom: 10,
+        width: '100%', // Full width for buttons
     },
     buttonText: {
         color: 'white',

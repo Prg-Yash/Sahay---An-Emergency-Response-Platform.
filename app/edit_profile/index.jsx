@@ -82,6 +82,7 @@ export default function EditProfilePage ({ user })  {
           onChangeText={setMobile}
         />
         <Button title="Save Changes" onPress={handleSave} />
+        <View style={{marginVertical: 2}}/>
         <Button title="Go to Profile" onPress={goToPreviousPage} />
       </ScrollView>
     </SafeAreaView>
@@ -92,6 +93,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f0f4f8',
+    padding: 10, // Added padding for better spacing
   },
   content: {
     padding: 20,
@@ -100,9 +102,10 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
+    color: '#1f2937',
   },
   input: {
-    height: 40,
+    height: 50, // Increased height for better touch targets
     borderColor: '#ccc',
     borderWidth: 1,
     borderRadius: 5,

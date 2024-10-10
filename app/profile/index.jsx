@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,8 +7,10 @@ import {
   ScrollView,
   Button,
 } from 'react-native';
-
+import { getDatabase, ref, onValue } from 'firebase/database'; // Import Firebase database methods
 import { router } from 'expo-router';
+import { auth } from '../firebase';
+
 const Card = ({ children }) => <View style={styles.card}>{children}</View>;
 const CardHeader = ({ children }) => <View style={styles.cardHeader}>{children}</View>;
 const CardContent = ({ children }) => <View style={styles.cardContent}>{children}</View>;
@@ -20,7 +22,8 @@ const Separator = () => <View style={styles.separator} />;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f4f8', // Light background color for the entire screen
+    backgroundColor: '#f0f4f8',
+    padding: 10, // Added padding for better spacing
   },
   content: {
     padding: 20,
@@ -32,9 +35,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.2, // Increased shadow opacity for depth
+    shadowRadius: 6, // Increased shadow radius
+    elevation: 5, // Increased elevation for Android
   },
   cardHeader: {
     marginBottom: 15,
@@ -78,12 +81,29 @@ const styles = StyleSheet.create({
     color: '#4b5563',
     marginBottom: 20,
   },
+  
 });
 
 export default function ProfilePage({ user, handleLogout }) {
+    const [userInfo, setUserInfo] = useState({});
+
+    
+    useEffect(() => {
+        if(auth?.currentUser?.uid) {}
+        const db = getDatabase();
+        const userRef = ref(db, 'users/' + auth?.currentUser?.uid); // Fetch user info from database
+
+        onValue(userRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                setUserInfo(data);
+            }
+        });
+    }, [auth?.currentUser?.uid]);
+
     function goToPreviousPage() {
-        router.replace('/home'); // Redirect to home page
-      };
+        router.replace('/home'); 
+    };
 
     return (
       <SafeAreaView style={styles.container}>
@@ -96,18 +116,25 @@ export default function ProfilePage({ user, handleLogout }) {
             <CardContent>
               <View style={styles.profileHeader}>
                 <View style={styles.profileInfo}>
-                  <Text style={styles.profileName}>{user?.name}</Text>
-                  <Text style={styles.profileEmail}>{user?.email}</Text>
+                  <Text style={styles.profileName}>{userInfo?.name}</Text>
+                  <Text style={styles.profileEmail}>{userInfo?.email}</Text>
                 </View>
               </View>
               <Separator />
               <Text style={styles.sectionTitle}>Account Settings</Text>
-              <Button title="Edit Profile" onPress={() => router.replace('/edit_profile')} />
-              <Button title="Apply for Volenteer" onPress={() => router.replace('/volenteer')} />
-              <Button title="Emergency Contacts" onPress={() => router.replace('/emergencycontacts')} />
+              <View style={styles.options}>
+                <Button title="Edit Profile" onPress={() => router.replace('/edit_profile')} />
+                <View style={{ marginVertical: 2 }} /> 
+                <Button title="Apply for Volenteer" onPress={() => router.replace('/volenteer')} />
+                <View style={{ marginVertical: 2 }} /> 
+                <Button title="Emergency Contacts" onPress={() => router.replace('/emergency_contacts')} />
+              </View>
+              
               <Separator />
-             
+             <View style={{marginVertical: 2}}/>
               <Button title="Log Out" variant="destructive" onPress={handleLogout} />
+              
+              <View style={{ marginVertical: 8 }} /> 
               <Button title="Go to Home" onPress={goToPreviousPage} />
             </CardContent>
           </Card>

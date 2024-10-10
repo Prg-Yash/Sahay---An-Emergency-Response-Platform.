@@ -11,6 +11,7 @@ import {
 import { signOut } from 'firebase/auth'; // Import Firebase auth methods
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { router } from 'expo-router'; // Import router for navigation
+import { auth } from '../firebase'; // Import auth for logout functionality
 
 const Card = ({ children }) => <View style={styles.card}>{children}</View>;
 const CardHeader = ({ children }) => <View style={styles.cardHeader}>{children}</View>;
@@ -21,7 +22,8 @@ const CardDescription = ({ children }) => <Text style={styles.cardDescription}>{
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f4f8', // Light background color for the entire screen
+    backgroundColor: '#f0f4f8',
+    padding: 10, // Added padding for better spacing
   },
   content: {
     padding: 20,
@@ -33,20 +35,20 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.2, // Increased shadow opacity for depth
+    shadowRadius: 6, // Increased shadow radius
+    elevation: 5, // Increased elevation for Android
   },
   cardHeader: {
     marginBottom: 15,
   },
   cardTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 22, // Increased font size for better visibility
+    fontWeight: 'bold',
     color: '#1f2937',
   },
   cardDescription: {
-    fontSize: 14,
+    fontSize: 16, // Increased font size for better readability
     color: '#4b5563',
     marginTop: 5,
   },
@@ -85,7 +87,7 @@ export default function HomeScreen({ route }) {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      router.replace('Login'); // Redirect to Login after logout
+      router.replace('/login'); // Redirect to Login after logout
     } catch (error) {
       console.error("Error logging out:", error.message);
     }
@@ -102,12 +104,11 @@ export default function HomeScreen({ route }) {
             </CardHeader>
             <CardContent>
               <Text>Stay connected and protected with Sahay. Remember, help is just a tap away.</Text>
+              <View style={{ marginVertical: 8 }} /> 
               <Button title="Go to Profile" onPress={() => router.replace('/profile')} />
-              <Button title="Go to Settings" onPress={() => router.replace('/settings')} />
-              <Button title="LeaderBoard" onPress={() => router.replace('/leaderboard')} />
-              <Button title="Log Out" onPress={handleLogout} />
             </CardContent>
           </Card>
+          <Button title="Log Out" onPress={handleLogout} />
           <View style={styles.grid}>
           </View>
         </ScrollView>

@@ -51,8 +51,9 @@ export default function LandingPage({ }) {
         <Text style={styles.title}>Welcome to Sahay</Text>
         <Text style={styles.subtitle}>Your trusted companion for safety and support</Text>
         
-        <Button title="Get Started" onPress={() => router.replace('/signUp')} color="#f97316" />
-        <Button title="I already have an account" onPress={() => router.replace('/login')} color="#f97316" />
+        <Button title="Get Started" onPress={() => router.replace('/signup')}  />
+        <View style={{ marginVertical: 8 }} /> 
+        <Button title="I already have an account" onPress={() => router.replace('/login')}  />
       </View>
     </SafeAreaView>
   );
