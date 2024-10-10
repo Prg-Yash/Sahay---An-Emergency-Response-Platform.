@@ -1,111 +1,121 @@
-import { useState, useEffect, useRef } from "react";
-import { Text, View, Button, Platform } from "react-native";
-import * as Device from "expo-device";
+import React, { useState, useEffect, useRef } from "react";
+import { View, Button, StyleSheet, Platform } from "react-native";
 import * as Notifications from "expo-notifications";
-import Constants from "expo-constants";
+import * as Device from "expo-device";
 
+// Configure notification handler
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
+    priority: Notifications.AndroidNotificationPriority.MAX,
   }),
 });
 
-const NotifyTracker = () => {
-  const [expoPushToken, setExpoPushToken] = useState("");
-  const [channels, setChannels] = useState([]);
-  const [notification, setNotification] = useState(undefined);
-  const notificationListener = useRef();
-  const responseListener = useRef();
+const notifytracker = () => {
+  const [notificationStatus, setNotificationStatus] = useState(false);
+  const notificationInterval = useRef(null);
 
   useEffect(() => {
-    registerForPushNotificationsAsync().then(
-      (token) => token && setExpoPushToken(token)
-    );
+    registerForPushNotificationsAsync();
 
-    if (Platform.OS === "android") {
-      Notifications.getNotificationChannelsAsync().then((value) =>
-        setChannels(value ?? [])
-      );
-    }
-    notificationListener.current =
-      Notifications.addNotificationReceivedListener((notification) => {
-        setNotification(notification);
-      });
-
-    responseListener.current =
+    // Set up notification response listener
+    const responseListener =
       Notifications.addNotificationResponseReceivedListener((response) => {
-        console.log(response);
+        const actionId = response.actionIdentifier;
+        if (actionId === "accept" || actionId === "decline") {
+          stopEmergencyNotification();
+        }
       });
 
     return () => {
-      notificationListener.current &&
-        Notifications.removeNotificationSubscription(
-          notificationListener.current
-        );
-      responseListener.current &&
-        Notifications.removeNotificationSubscription(responseListener.current);
+      Notifications.removeNotificationSubscription(responseListener);
+      if (notificationInterval.current) {
+        clearInterval(notificationInterval.current);
+      }
     };
   }, []);
 
+  const startEmergencyNotification = async () => {
+    setNotificationStatus(true);
+
+    // Set up notification categories (for iOS)
+    await Notifications.setNotificationCategoryAsync("emergency", [
+      {
+        identifier: "accept",
+        buttonTitle: "Accept",
+        options: {
+          isDestructive: false,
+        },
+      },
+      {
+        identifier: "decline",
+        buttonTitle: "Decline",
+        options: {
+          isDestructive: true,
+        },
+      },
+    ]);
+
+    // Create Android notification channel
+    if (Platform.OS === "android") {
+      await Notifications.setNotificationChannelAsync("emergency", {
+        name: "Emergency Alerts",
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: "#FF0000",
+        sound: "default",
+      });
+    }
+
+    // Schedule initial notification
+    await scheduleNotification();
+
+    // Set up repeating notifications
+    notificationInterval.current = setInterval(scheduleNotification, 5000);
+  };
+
+  const stopEmergencyNotification = async () => {
+    setNotificationStatus(false);
+    if (notificationInterval.current) {
+      clearInterval(notificationInterval.current);
+      notificationInterval.current = null;
+    }
+    await Notifications.cancelAllScheduledNotificationsAsync();
+    await Notifications.dismissAllNotificationsAsync();
+  };
+
+  const scheduleNotification = async () => {
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "Emergency Alert!",
+        body: "Someone needs immediate assistance!",
+        sound: "../assets/sounds/emergency.mp3",
+        priority: "max",
+        categoryIdentifier: "emergency",
+        vibrate: [0, 250, 250, 250],
+      },
+      trigger: null, // null means send immediately
+    });
+  };
+
   return (
-    <View
-      style={{
-        flex: 1,
-        alignItems: "center",
-        justifyContent: "space-around",
-      }}
-    >
-      <Text>Your expo push token: {expoPushToken}</Text>
-      <Text>{`Channels: ${JSON.stringify(
-        channels.map((c) => c.id),
-        null,
-        2
-      )}`}</Text>
-      <View style={{ alignItems: "center", justifyContent: "center" }}>
-        <Text>
-          Title: {notification && notification.request.content.title}{" "}
-        </Text>
-        <Text>Body: {notification && notification.request.content.body}</Text>
-        <Text>
-          Data:{" "}
-          {notification && JSON.stringify(notification.request.content.data)}
-        </Text>
-      </View>
+    <View style={styles.container}>
       <Button
-        title="Press to schedule a notification"
-        onPress={async () => {
-          await schedulePushNotification();
-        }}
+        title={notificationStatus ? "Cancel Emergency" : "Trigger Emergency"}
+        onPress={
+          notificationStatus
+            ? stopEmergencyNotification
+            : startEmergencyNotification
+        }
       />
     </View>
   );
 };
 
-async function schedulePushNotification() {
-  await Notifications.scheduleNotificationAsync({
-    content: {
-      title: "You've got mail! 📬",
-      body: "Here is the notification body",
-      data: { data: "goes here", test: { test1: "more data" } },
-      sound: "default", // Add this line to use the default notification sound
-    },
-    trigger: { seconds: 1 },
-  });
-}
-
 async function registerForPushNotificationsAsync() {
   let token;
-
-  if (Platform.OS === "android") {
-    await Notifications.setNotificationChannelAsync("default", {
-      name: "default",
-      importance: Notifications.AndroidImportance.MAX,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: "#FF231F7C",
-    });
-  }
 
   if (Device.isDevice) {
     const { status: existingStatus } =
@@ -119,25 +129,6 @@ async function registerForPushNotificationsAsync() {
       alert("Failed to get push token for push notification!");
       return;
     }
-    // Learn more about projectId:
-    // https://docs.expo.dev/push-notifications/push-notifications-setup/#configure-projectid
-    // EAS projectId is used here.
-    try {
-      const projectId =
-        Constants?.expoConfig?.extra?.eas?.projectId ??
-        Constants?.easConfig?.projectId;
-      if (!projectId) {
-        throw new Error("Project ID not found");
-      }
-      token = (
-        await Notifications.getExpoPushTokenAsync({
-          projectId,
-        })
-      ).data;
-      console.log(token);
-    } catch (e) {
-      token = `${e}`;
-    }
   } else {
     alert("Must use physical device for Push Notifications");
   }
@@ -145,4 +136,12 @@ async function registerForPushNotificationsAsync() {
   return token;
 }
 
-export default NotifyTracker;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+});
+
+export default notifytracker;
