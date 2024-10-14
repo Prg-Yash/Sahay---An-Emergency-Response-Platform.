@@ -1,272 +1,60 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Modal, Button, Alert } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { getAuth, signInWithEmailAndPassword, isEmailVerified, signOut, sendEmailVerification, createUserWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
-import { getDatabase, ref, set } from "firebase/database";
-import { auth } from "./firebase";
-import ChatBot from '../components/ChatBot';
+import { Button } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { StyleSheet, View, Text } from 'react-native';
+import { router } from 'expo-router';
+import { auth } from '../app/firebase'; // Adjust the import path as necessary
+import { useEffect } from 'react';
 
-const Stack = createNativeStackNavigator();
+export default function LandingPage({ }) {
 
-const styles = {
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-    backgroundColor: '#e0f7fa',
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
+  const styles = StyleSheet.create({
+    content: {
+      padding: 20,
     },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 8,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 24,
-    color: '#00796b',
-  },
-  input: {
-    width: '100%',
-    height: 50,
-    borderColor: '#00796b',
-    borderWidth: 1,
-    marginBottom: 16,
-    padding: 10,
-    borderRadius: 10,
-    backgroundColor: '#ffffff',
-  },
-  button: {
-    marginTop: 16,
-    width: '100%',
-    height: 50,
-    backgroundColor: '#00796b',
-    color: 'white',
-    fontWeight: 'bold',
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  link: {
-    marginTop: 16,
-    color: '#00796b',
-    fontWeight: 'bold',
-    textDecorationLine: 'underline',
-  },
-  errorText: {
-    color: 'red',
-    marginTop: 16,
-  },
-  chatBotButton: {
-    position: 'absolute',
-    bottom: 30,
-    right: 30,
-    width: 60,
-    height: 60,
-    backgroundColor: '#00796b',
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 5, // For Android shadow
-  },
-  chatBotButtonText: {
-    fontSize: 24, // Adjust size as necessary
-    color: '#fff',
-  },
-};
+    title: {
+      fontSize: 24,
+      fontWeight: '700',
+      marginBottom: 10,
+      color: '#1f2937',
+    },
+    subtitle: {
+      fontSize: 16,
+      color: '#4b5563',
+      marginBottom: 20,
+    },
+    button: {
+      backgroundColor: '#f97316',
+      padding: 10,
+      borderRadius: 5,
+      marginBottom: 10,
+      alignItems: 'center',
+    },
+    buttonText: {
+      color: '#fff',
+      fontSize: 16,
+    }
+  });
 
-function LoginScreen({ navigation }) {
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
-  const [error, setError] = React.useState('');
-  const [isEmailVerified, setIsEmailVerified] = React.useState(true);
-
-  const handleSubmit = async () => {
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      // Check if the email is verified
-      if (!user.emailVerified) {
-        setIsEmailVerified(false);
-        setError("Please verify your email before logging in.");
-        return;
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(user => {
+      if (user) {
+        router.replace('/home'); // Redirect to home if user is authenticated
       }
+    });
 
-      navigation.navigate('Home', { user }); // Pass user data to Home screen
-    } catch (error) {
-      setError(error.message);
-    }
-  };
-
-  const handleForgotPassword = async () => {
-    try {
-      await sendPasswordResetEmail(auth, email);
-      setError("Password reset email sent. Please check your email.");
-    } catch (error) {
-      setError("Failed to send password reset email. Please try again.");
-    }
-  };
+    return () => unsubscribe(); // Cleanup subscription on unmount
+  }, []);
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Login</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry={true}
-        autoCapitalize="none"
-      />
-      <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-        <Text style={{ color: 'white', fontWeight: 'bold' }}>Login</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={handleForgotPassword}>
-        <Text style={{ color: 'white', fontWeight: 'bold' }}>Forgot Password</Text>
-      </TouchableOpacity>
-      <Text style={styles.link}>Don't have an account? <Text style={styles.link} onPress={() => navigation.navigate('SignUp')}>Sign Up</Text></Text>
-      {error && <Text style={styles.errorText}>{error}</Text>}
-      {!isEmailVerified && <Text style={styles.errorText}>Please verify your email before logging in.</Text>}
-    </ScrollView>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.content}>
+        <Text style={styles.title}>Welcome to Sahay</Text>
+        <Text style={styles.subtitle}>Your trusted companion for safety and support</Text>
+        
+        <Button title="Get Started" onPress={() => router.replace('/signup')}  />
+        <View style={{ marginVertical: 8 }} /> 
+        <Button title="I already have an account" onPress={() => router.replace('/login')}  />
+      </View>
+    </SafeAreaView>
   );
-}
-
-function SignUpScreen({ navigation }) {
-  const [name, setName] = React.useState('');
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
-  const [mobileNumber, setMobileNumber] = React.useState('');
-  const [address, setAddress] = React.useState('');
-  const [showModal, setShowModal] = React.useState(false);
-
-  const handleSignUp = async () => {
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      const db = getDatabase();
-      const userRef = ref(db, 'users/' + user.uid);
-      await set(userRef, {
-        userId: user.uid,
-        name: name,
-        email: email,
-        mobileNumber: mobileNumber,
-        address: address
-      });
-      setShowModal(true);
-      await sendEmailVerification(user);
-      Alert.alert("Verification Email Sent", "Please check your email to verify your account.");
-      navigation.navigate('Login'); // Redirect to Login after sign up
-    } catch (error) {
-      console.error("Error signing up:", error.message);
-    }
-  };
-
-  return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Sign Up</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Name"
-        value={name}
-        onChangeText={setName}
-        autoCapitalize="words"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry={true}
-        autoCapitalize="none"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Mobile Number"
-        value={mobileNumber}
-        onChangeText={setMobileNumber}
-        keyboardType="phone-pad"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Address"
-        value={address}
-        onChangeText={setAddress}
-        multiline={true}
-      />
-      <TouchableOpacity style={styles.button} onPress={handleSignUp}>
-        <Text style={{ color: 'white', fontWeight: 'bold' }}>Sign Up</Text>
-      </TouchableOpacity>
-      <Text style={styles.link}>Already have an account? <Text style={styles.link} onPress={() => navigation.navigate('Login')}>Login</Text></Text>
-    </ScrollView>
-  );
-}
-
-function HomeScreen({ route, navigation }) {
-  const { user } = route.params;
-  const [isChatBotVisible, setChatBotVisible] = useState(false); 
-
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      navigation.navigate('Login'); // Redirect to Login after logout
-    } catch (error) {
-      console.error("Error logging out:", error.message);
-    }
-  };
-
-  const toggleChatBot = () => {
-    setChatBotVisible(!isChatBotVisible); // Toggle the ChatBot visibility
-  };
-
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Welcome, {user.name}!</Text> 
-      {isChatBotVisible && <ChatBot />} {/* Render ChatBot based on visibility */}
-
-      <TouchableOpacity style={styles.button} onPress={handleLogout}>
-        <Text style={{ color: 'white', fontWeight: 'bold' }}>Logout</Text>
-      </TouchableOpacity>
-
-      {/* Icon/Button to toggle ChatBot */}
-      <TouchableOpacity style={styles.chatBotButton} onPress={toggleChatBot}>
-        <Text style={styles.chatBotButtonText}>🤖</Text> {/* Use an emoji or an icon */}
-      </TouchableOpacity>
-      
-    </View>
-  );
-}
-
-function App() {
-  return (
-    <NavigationContainer independent={true}>
-      <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="SignUp" component={SignUpScreen} />
-        <Stack.Screen name="Home" component={HomeScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
-  );
-}
-
-export default App;
+} 
